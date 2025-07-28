@@ -61,12 +61,14 @@ export default function App() {
       return alert('Please upload all three files (general, lunch, dinner)');
 
     try {
-      await fetch('/api/receipts/metadata', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
+      // Local metadata extraction (simulate what you'd do in the backend)
+      const formMetadata = {
+        ...form,
+        submittedAt: new Date().toISOString()
+      };
+      console.log("Form metadata (local only):", formMetadata);
 
+      // Read workbooks
       const [generalWb, lunchWb, dinnerWb] = await Promise.all(
         [files.general, files.lunch, files.dinner].map((file) =>
           file
@@ -75,10 +77,13 @@ export default function App() {
         )
       );
 
+      // Extract and apply metrics
       const cellMap = extractMetrics({ generalWb, lunchWb, dinnerWb });
-      
+
+      // Generate final downloadable workbook
       await downloadFilledWorkbook(cellMap, form);
 
+      // Reset state
       setFiles({ general: null, lunch: null, dinner: null });
       setForm({ firstName: '', lastName: '', day: '', date: '', location: '' });
     } catch (err) {

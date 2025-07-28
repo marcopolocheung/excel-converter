@@ -14,6 +14,12 @@ const findCell = (rows, match, col) => {
   return toNumber(row[col]);
 };
 
+const findCellSafe = (rows, match, col) => {
+  const row = rows.find(match);
+  if (!row) return 0;
+  return toNumber(row[col]);
+};
+
 export function extractMetrics({ generalWb, lunchWb, dinnerWb }) {
   // gwb
   const revenueSummary  = getSheetDataFrom(generalWb, 'Revenue summary');
@@ -27,7 +33,7 @@ export function extractMetrics({ generalWb, lunchWb, dinnerWb }) {
     (r) => r['Payment type']?.toUpperCase() === 'CASH', 'Total');
 
   const card = (sub) =>
-    findCell(paymentsSummary,
+    findCellSafe(paymentsSummary,
       (r) =>
         r['Payment type']?.toUpperCase() === 'CREDIT/DEBIT' &&
         r['Payment sub type']?.toUpperCase() === sub, 'Total');
