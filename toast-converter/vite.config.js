@@ -1,7 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      // ← this forces ExcelJS to use its pre‑bundled browser version
+      exceljs: 'exceljs/dist/exceljs.min.js',
+    },
+  },
 })
