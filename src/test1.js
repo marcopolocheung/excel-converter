@@ -71,7 +71,6 @@ async function updateTemplate() {
     await workbook.xlsx.readFile(templatePath);
 
     const sheet = workbook.getWorksheet("DATAINPUT");
-    if (!sheet) throw new Error("DATAINPUT sheet not found in template.");
 
     const values = {
         C8: revenueTotal,
