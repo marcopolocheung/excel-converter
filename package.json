@@ -1,0 +1,16 @@
+{
+  "name": "excel-converter",
+  "version": "1.0.0",
+  "description": "Simple Low-Overhead script to convert XSLX/CSV into formatted XSLX for China Rose.",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "xlsx": "^0.18.5"
+  }
+}
