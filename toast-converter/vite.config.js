@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  base: '/toast-converter/',
   plugins: [react()],
   resolve: {
     alias: {
