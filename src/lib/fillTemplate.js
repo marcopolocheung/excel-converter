@@ -73,10 +73,10 @@ export async function downloadFilledWorkbook(cellMap, formData) {
 
       sheet.getCell('D1').value = formData.location || null;
 
-      sheet.getCell('C4').value = formData.amDeposit || null;
-      sheet.getCell('C5').value = formData.pmDeposit || null;
-      sheet.getCell('C6').value = formData.amOverShort || null;
-      sheet.getCell('C7').value = formData.pmOverShort || null;
+      sheet.getCell('C4').value = formData.amDeposit ? parseFloat(formData.amDeposit) : null;
+      sheet.getCell('C5').value = formData.pmDeposit ? parseFloat(formData.pmDeposit) : null;
+      sheet.getCell('C6').value = formData.amOverShort ? parseFloat(formData.amOverShort) : null;
+      sheet.getCell('C7').value = formData.pmOverShort ? parseFloat(formData.pmOverShort) : null;
     }
 
     console.log('Writing buffer...');
@@ -87,21 +87,26 @@ export async function downloadFilledWorkbook(cellMap, formData) {
       { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
     );
     
-    // name
-    const fullName = formData ? `${formData.firstName}_${formData.lastName}`.trim() : 'Unknown';
-    const date = formData?.date || new Date().toISOString().slice(0, 10);
-    
-    // 1 or 2 loc
-    let locationNumber = 'Unknown';
+    let locationNumber = 'XX';
     if (formData?.location) {
-      if (formData.location.includes('CHINA ROSE #1')) {
-        locationNumber = '1';
+      if (formData.location.includes('CHINA ROSE #3')) {
+        locationNumber = '3';
       } else if (formData.location.includes('CHINA ROSE #2')) {
         locationNumber = '2';
       }
     }
-    
-    const filename = `${fullName}_${date}_${locationNumber}_sales_summary.xlsx`;
+
+    let datePart = '00-0000';
+    if (formData?.date) {
+      const dateObj = new Date(formData.date);
+      const yy = String(dateObj.getFullYear()).slice(-2);
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      datePart = `${yy}-${mm}${dd}`;
+    }
+
+    const filename = `${datePart}_CR${locationNumber}_Daily_Sales_Report.xlsx`;
+
 
     console.log('Downloading file:', filename);
     const a = document.createElement('a');
