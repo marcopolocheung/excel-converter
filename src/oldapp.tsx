@@ -103,9 +103,9 @@ export default function App() {
   <div className="w-full max-w-4xl">
     <button
       onClick={() => setActiveTab(activeTab === 'main' ? 'other' : 'main')}
-      className="absolute top-10 left-10 px-8 py-8 rounded bg-blue-500 text-white hover:bg-blue-600 transition z-10"
+      className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 transition"
     >
-      {activeTab === 'main' ? 'Switch to Hours Compiler' : 'Switch to Excel Converter'}
+      Switch Tab
     </button>
     
 
