@@ -1,0 +1,4 @@
+{
+  "name": "China Rose Excel Converter",
+  "postCreateCommand": "npm install"
+}
