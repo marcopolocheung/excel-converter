@@ -6,6 +6,8 @@ The tool streamlines bookkeeping across multiple business locations by enabling 
 
 The converter is deployed via GitHub Pages to ensure accessibility from any location with an internet connection. This setup is optimized for lower-end computers and avoids reliance on local software installations so user error is minimized.
 
+https://marcopolocheung.github.io/excel-converter/
+
 Notes:
 
 Front-end needs work, looks terrible
