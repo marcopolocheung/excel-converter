@@ -70,8 +70,13 @@ export async function downloadFilledWorkbook(cellMap, formData) {
       sheet.getCell('B2').value = formData.day || null;
       
       sheet.getCell('B3').value = formData.date || null;
-      
+
       sheet.getCell('D1').value = formData.location || null;
+
+      sheet.getCell('C4').value = formData.amDeposit || null;
+      sheet.getCell('C5').value = formData.pmDeposit || null;
+      sheet.getCell('C6').value = formData.amOverShort || null;
+      sheet.getCell('C7').value = formData.pmOverShort || null;
     }
 
     console.log('Writing buffer...');

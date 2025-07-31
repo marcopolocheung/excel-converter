@@ -3,7 +3,6 @@ import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import { extractMetrics } from './lib/parseToast';
 import { downloadFilledWorkbook } from './lib/fillTemplate';
-import React, { useRef } from 'react';
 
 type FileMap = {
   general: File | null;
@@ -17,7 +16,11 @@ export default function App() {
     lastName: '',
     day: '',
     date: '',
-    location: ''
+    location: '',
+    amDeposit: '',
+    pmDeposit: '',
+    amOverShort: '',
+    pmOverShort: ''
   });
 
 
@@ -85,7 +88,7 @@ export default function App() {
 
       // Reset state
       setFiles({ general: null, lunch: null, dinner: null });
-      setForm({ firstName: '', lastName: '', day: '', date: '', location: '' });
+      setForm({firstName: '', lastName: '', day: '', date: '', location: '', amDeposit: '', pmDeposit: '', amOverShort: '', pmOverShort: ''});
     } catch (err) {
       console.error(err);
       alert('Something went wrong — see console');
@@ -94,16 +97,13 @@ export default function App() {
 
   /*UI*/
   return (
-  <main className="flex flex-col items-center justify-center h-screen gap-6 font-sans text-gray-800">
-    <h1 className="text-2xl font-bold">Toast EXCEL → FINAL EXCEL</h1>
+  <main className="min-h-screen w-screen w-full flex items-center justify-center">
+  <div className="flex flex-col items-center justify-center w-full max-w-4xl px-4 gap-6">
+    <h1 className="text-2xl font-bold">China Rose Excel Converter</h1>
 
 
-    <p className="text-center text-gray-600 max-w-md">
-    Please download <strong>only Excel (.xlsx) files</strong> exported from toasttab.com. Drag and drop each file into its designated area below. Ensure that files for <strong>Lunch</strong> include data before 3PM, and files for <strong>Dinner</strong> include data after 3PM.
-    </p>
-
-    <p className="text-center text-gray-600 max-w-md">
-    Please fill in ALL details below.
+    <p className="text-center text-white max-w-md">
+    Please download <strong>only Excel (.xlsx) files</strong> exported from toasttab.com.
     </p>
 
     <div className="grid gap-2 w-full max-w-md mx-auto">
@@ -150,8 +150,8 @@ export default function App() {
         onChange={handleInput}
       >
         <option value="" disabled>Select China Rose location</option>
-        <option value="CHINA ROSE #1 - 7046 W MILITARY DR">
-          CHINA ROSE #1 - 7046 W MILITARY DR
+        <option value="CHINA ROSE #3 - 7046 W MILITARY DR">
+          CHINA ROSE #3 - 7046 W MILITARY DR
         </option>
         <option value="CHINA ROSE #2 - 2535 SW MILITARY DR">
           CHINA ROSE #2 - 2535 SW MILITARY DR
@@ -159,67 +159,99 @@ export default function App() {
       </select>
     </div>
 
-    <div className="flex flex-col gap-4">
-      <p className="text-center text-gray-600 max-w-md">
-    
-      </p>
+    <div className="flex flex-row gap-4 justify-center w-full max-w-4xl">
+
       {(['general', 'lunch', 'dinner'] as (keyof FileMap)[]).map((key) => {
         const { getRootProps, getInputProps, isDragActive } = dropzones[key];
         return (
           <div
             key={key}
-            {...getRootProps()}
-            className={`flex flex-col items-center border-2 border-dashed rounded-xl p-6 cursor-pointer transition ${
-              isDragActive ? 'border-blue-600 bg-blue-200 shadow-lg scale-105' : 'border-gray-400 bg-gray-50'
-            } hover:bg-blue-50 active:bg-blue-100`}
-            tabIndex={0}
-            style={{ outline: 'none' }}
+            className="flex flex-col w-64"
           >
-            <div className="font-bold mb-4">{key.toUpperCase()} REPORT</div>
-            <input {...getInputProps()} style={{ display: 'none' }} />
-            {files[key] ? (
-              <div className="mt-2 text-blue-700 font-medium">{files[key]!.name}</div>
-            ) : (
-              <button
-                type="button"
-                className="px-6 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition shadow"
-                onClick={e => {
-                  e.preventDefault();
-                  const input = (e.currentTarget.parentElement as HTMLElement).querySelector('input[type="file"]') as HTMLInputElement | null;
-                  input?.click();
-                }}
-              >
-                Drag or click to select the {key} .xlsx
-              </button>
-            )}
+            {/* Title Box */}
+            <div className="bg-gray-200 border border-gray-400 p-2 text-center font-bold text-black">
+              {key.toUpperCase()} REPORT
+            </div>
+            {/* Content Box */}
+            <div
+              {...getRootProps()}
+              className={`flex flex-col items-center justify-center border border-gray-400 bg-gray-200 p-6 cursor-pointer transition min-h-32 ${
+                isDragActive ? 'border-blue-600 bg-blue-200 shadow-lg scale-105' : 'hover:bg-gray-100'
+              }`}
+              tabIndex={0}
+              style={{ outline: 'none' }}
+            >
+              <input {...getInputProps()} style={{ display: 'none' }} />
+              {files[key] ? (
+                <div className="text-blue-700 font-medium text-center">{files[key]!.name}</div>
+              ) : (
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded text-white bg-blue-600 hover:bg-blue-700 transition shadow text-sm"
+                  onClick={e => {
+                    e.preventDefault();
+                    const input = (e.currentTarget.parentElement as HTMLElement).querySelector('input[type="file"]') as HTMLInputElement | null;
+                    input?.click();
+                  }}
+                >
+                  Drag or click to select
+                </button>
+              )}
+            </div>
           </div>
         );
       })}
-    </div>
+    </div> 
 
-    <p className="text-center text-gray-600 max-w-md">
-    
-    </p>
-
-    <p className="text-center text-gray-600 max-w-md">
-    Once <strong>ALL REPORTs</strong> are uploaded, click the button below to download the day's sales summary.
-    </p>
-
-    <p className="text-center text-gray-600 max-w-md">
+    <p className="text-center text-white max-w-md">
     <strong>REMEMBER TO ENABLE EDITING TO SEE FULL CHANGES</strong>
     </p>
+
+    <div className="flex flex-row gap-2 w-full">
+      <input
+      className="border p-2 flex-1 rounded text-center"
+      name="amDeposit"
+      placeholder="AM Deposit"
+      value={form.amDeposit}
+      onChange={handleInput}
+      />
+      <input
+        className="border p-2 flex-1 rounded text-center"
+        name="amOverShort"
+        placeholder="AM Over (short)"
+        value={form.amOverShort}
+        onChange={handleInput}
+      />
+    </div>
+    <div className="flex flex-row gap-2 w-full">  
+      <input
+        className="border p-2 flex-1 rounded text-center"
+        name="pmDeposit"
+        placeholder="PM Deposit"
+        value={form.pmDeposit}
+        onChange={handleInput}
+      />
+      <input
+        className="border p-2 flex-1 rounded text-center"
+        name="pmOverShort"
+        placeholder="PM Over (short)"
+        value={form.pmOverShort}
+        onChange={handleInput}
+      />
+    </div>  
 
     <button
       onClick={handleConvert}
       disabled={!files.general || !files.lunch || !files.dinner}
       className={`px-6 py-2 rounded-lg text-white transition shadow ${
         files.general && files.lunch && files.dinner
-          ? 'bg-orange-500 hover:bg-orange-600'
-          : 'bg-gray-400 cursor-not-allowed'
+          ? 'bg-green-500 hover:bg-green-600'
+          : 'bg-red-400 cursor-not-allowed'
       }`}
     >
       Convert & Download
     </button>
+  </div> 
   </main>
 );
 }
