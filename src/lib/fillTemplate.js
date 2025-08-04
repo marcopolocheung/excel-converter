@@ -1,17 +1,14 @@
 import ExcelJS from 'exceljs';
 
-// fetch template once per session
 let templateArrayBuffer = null;
 async function getTemplate() {
   if (templateArrayBuffer) return templateArrayBuffer;
   
-  // Try multiple possible paths
   const possiblePaths = [
     '/template.xlsx',
     './template.xlsx',
     `${window.location.origin}/template.xlsx`,
     `${window.location.pathname}template.xlsx`,
-    // If your repo name is in the URL, try this too
     `${window.location.origin}${window.location.pathname}template.xlsx`
   ];
   
@@ -30,10 +27,10 @@ async function getTemplate() {
         
         return templateArrayBuffer;
       } else {
-        console.log('❌ Path failed:', path, `(${res.status})`);
+        console.log('Path failed:', path, `(${res.status})`);
       }
     } catch (error) {
-      console.log('❌ Path error:', path, error.message);
+      console.log('Path error:', path, error.message);
     }
   }
   

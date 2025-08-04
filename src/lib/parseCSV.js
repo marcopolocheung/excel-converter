@@ -225,5 +225,24 @@ async function exportSingleSheetXlsx(allRows, meta = {}) {
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   });
-  saveAs(blob, "grouped_employees.xlsx");
+  function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    const yy = String(d.getFullYear()).slice(2);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yy}_${mm}${dd}`;
+  }
+
+  function extractChinaRoseNumber(locationStr) {
+    const match = locationStr?.match(/#(\d+)/);
+    return match ? match[1] : "UNKNOWN";
+  }
+
+  const chinaRoseNumber = extractChinaRoseNumber(location);
+  const formattedStartDate = formatDate(startDate);
+  const formattedEndDate = formatDate(endDate);
+
+  const fileName = `CR${chinaRoseNumber}_${formattedStartDate}-${formattedEndDate}_EMPLOYEE_HOUR_LOG_SUMMARY.xlsx`;
+
+  saveAs(blob, fileName);
 }
