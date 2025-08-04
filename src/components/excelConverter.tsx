@@ -93,7 +93,7 @@ export default function ChinaRoseConverter() {
   <div className="w-full max-w-4xl">
     
     <div className="flex flex-col items-center justify-center w-full max-w-4xl px-4 gap-6">
-          <h1 className="text-2xl font-bold">China Rose Excel Converter</h1>
+          <h1 className="text-2xl font-bold">CHINA ROSE Excel Sales Converter</h1>
 
           <p className="text-center text-white max-w-md">
           Please download <strong>only Excel (.xlsx) files</strong> exported from toasttab.com.

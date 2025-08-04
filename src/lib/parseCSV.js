@@ -1,16 +1,17 @@
 import Papa from "papaparse";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
-export function parseCsvAndExport(file, onComplete, onError) {
+export function parseCsvAndExport(file, onComplete, onError, meta = {}) {
   Papa.parse(file, {
     header: true,
     skipEmptyLines: true,
     complete: (results) => {
-      const grouped = groupByEmployeeExternalId(results.data);
+      const dataWithoutFirstRow = results.data.slice(1);
+      const grouped = groupByEmployeeExternalId(dataWithoutFirstRow);
       const sorted = sortGroupedByDate(grouped);
       const flattened = flattenGroupedData(sorted);
-      exportSingleSheetXlsx(flattened);
+      exportSingleSheetXlsx(flattened, meta); 
       onComplete();
     },
     error: (err) => {
@@ -30,7 +31,6 @@ function groupByEmployeeExternalId(data) {
   return grouped;
 }
 
-// Sorts each group by "In Date" ascending
 function sortGroupedByDate(grouped) {
   const sorted = {};
 
@@ -45,12 +45,11 @@ function sortGroupedByDate(grouped) {
   return sorted;
 }
 
-// Flattens all sorted rows into one array
 function flattenGroupedData(grouped) {
   const result = [];
 
   const headerRow = {
-    "Employee External Id": "Employee External Id",
+    "Employee External Id": "Employee Id",
     Employee: "Employee",
     "Job Title": "Job Title",
     "In Date": "In Date",
@@ -60,18 +59,12 @@ function flattenGroupedData(grouped) {
     "Overtime Hours": "Overtime Hours",
   };
 
-  let isFirstGroup = true;
-
   Object.entries(grouped).forEach(([id, rows]) => {
-    if (!isFirstGroup) {
-      result.push(headerRow);
-    } else {
-      isFirstGroup = false;
-    }
+    result.push(headerRow);
 
     result.push(...rows);
 
-    const firstRow = rows[0];  // Assume name/job title is consistent
+    const firstRow = rows[0]; 
 
     const totalRow = {
       "Employee External Id": id,
@@ -101,52 +94,136 @@ function flattenGroupedData(grouped) {
   return result;
 }
 
-function exportSingleSheetXlsx(allRows) {
-  const wb = XLSX.utils.book_new();
-  
-  // Convert data and identify header rows for post-processing
-  const ws = XLSX.utils.json_to_sheet(allRows);
+async function exportSingleSheetXlsx(allRows, meta = {}) {
+  const { location = "", startDate = "", endDate = "" } = meta;
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("All Employees");
 
-  // Find all header row indices
-  const headerRowIndices = [];
+  //< page setup >
+
+  sheet.pageSetup.margins = {
+    left: 0.45,
+    right: 0.45,
+    top: 1,
+    bottom: 1,
+    header: 0.3,
+    footer: 0.3
+  };
+
+
+  sheet.pageSetup.fitToPage = true;
+  sheet.pageSetup.fitToWidth = 1;
+  sheet.pageSetup.fitToHeight = 10;
+
+  const [locLine1, locLine2] = 
+    (location || "").split(" - ").map(s => s.trim());
+
+  const leftHeader = 
+    locLine2 ? `${locLine1}\n${locLine2}` : location;
+
+  const dateRange = startDate && endDate ? `${startDate} - ${endDate}` : "";
+
+  sheet.headerFooter.oddHeader =
+    `&L&B&"Arial"&16${leftHeader}` +
+    `&C&B&"Arial"&16BI-WEEKLY PAY PERIOD\n${dateRange}` +
+    `&R&B&"Arial"&16&P`;
+
+  sheet.columns = [
+    { key: "Employee External Id", width: 25 },
+    { key: "Employee", width: 35 },
+    { key: "Job Title", width: 30 },
+    { key: "In Date", width: 25 },
+    { key: "Out Date", width: 25 },
+    { key: "Total Hours", width: 25 },
+    { key: "Regular Hours", width: 25 },
+    { key: "Overtime Hours", width: 25 }
+  ];
+
+  //< page setup />
+
   allRows.forEach((row, rowIndex) => {
-    const isHeaderRow =
-      row["Employee External Id"] === "Employee External Id" &&
-      row["Employee"] === "Employee";
+    const keys        = Object.keys(row);
+    const isHeaderRow = row["Employee External Id"] === "Employee Id" && row["Employee"] === "Employee";
+    const isTotalRow  = row["In Date"] === "TOTAL";
+
+    const values = keys.map((key) => {
+      if (
+        !isHeaderRow &&
+        ["Total Hours", "Regular Hours", "Overtime Hours"].includes(key) &&
+        row[key] !== "" &&
+        row[key] !== undefined &&
+        row[key] !== null
+      ) {
+        const num = parseFloat(row[key]);
+        return isNaN(num) ? null : num;
+      }
+      return row[key];
+    });
+
+    const addedRow = sheet.addRow(values);
+
+    addedRow.alignment = { vertical: "middle", horizontal: "center" };
+
+    if (!isHeaderRow && !isTotalRow) {
+      addedRow.font = { name: "Arial", size: 14 };
+    }
+    
+    const excelRowNumber = addedRow.number;
+
+    if (!isHeaderRow) {
+      ["Total Hours", "Regular Hours", "Overtime Hours"].forEach(colName => {
+        const colIndex = keys.indexOf(colName) + 1;
+        if (colIndex > 0) {
+          const cell = sheet.getCell(excelRowNumber, colIndex);
+          cell.numFmt = '0.00';
+        }
+      });
+    }
+
     if (isHeaderRow) {
-      headerRowIndices.push(rowIndex);
+      addedRow.eachCell((cell) => {
+        cell.font = { name: 'Arial', size: 16, bold: true };
+        cell.fill = undefined;
+        cell.border = {
+          bottom: { style: "thick", color: { argb: "000000" } } 
+        };
+      });
+    }
+
+    if (isTotalRow) {
+      const colStart = keys.indexOf("In Date") + 1;
+      const colEnd = keys.indexOf("Out Date") + 1;
+
+      if (colStart > 0 && colEnd > colStart) {
+        sheet.mergeCells(excelRowNumber, colStart, excelRowNumber, colEnd);
+
+        const mergedCell = sheet.getCell(excelRowNumber, colStart);
+        mergedCell.alignment = { vertical: "middle", horizontal: "center" };
+        mergedCell.font = { bold: true, name: 'Arial', size: 16 };
+      }
+
+      addedRow.eachCell((cell) => {
+        cell.font = { name: 'Arial', size: 16, bold: true };
+      });
+
+      addedRow.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thick", color: { argb: "000000" } }
+        };
+      });
     }
   });
 
-  // Apply formatting to header rows - this approach works with free XLSX
-  headerRowIndices.forEach(rowIndex => {
-    const columnKeys = Object.keys(allRows[rowIndex]);
-    columnKeys.forEach((_, colIndex) => {
-      const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
-      if (ws[cellAddress]) {
-        // Set cell style for bold headers
-        ws[cellAddress].s = {
-          font: { bold: true },
-          fill: { fgColor: { rgb: "EEEEEE" } }, // Light gray background
-          border: {
-            top: { style: "thin" },
-            bottom: { style: "thin" },
-            left: { style: "thin" },
-            right: { style: "thin" }
-          }
-        };
-      }
-    });
+  const endRow = sheet.addRow(["*** END OF REPORT ***"]);
+  endRow.alignment = { vertical: "middle", horizontal: "center" };
+  endRow.font = { name: "Arial", bold: true, size: 16 };
+
+  const endRowNumber = endRow.number;
+  sheet.mergeCells(endRowNumber, 1, endRowNumber, 8);
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   });
-
-  XLSX.utils.book_append_sheet(wb, ws, "All Employees");
-
-  const wbout = XLSX.write(wb, {
-    bookType: "xlsx",
-    type: "array",
-    cellStyles: true
-  });
-
-  const blob = new Blob([wbout], { type: "application/octet-stream" });
   saveAs(blob, "grouped_employees.xlsx");
 }
