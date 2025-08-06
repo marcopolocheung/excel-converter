@@ -1,6 +1,6 @@
 # Toast Excel --> Bookkeeping Excel final.
 
-This is a lightweight website deployment of the Excel converter tool used by non-technical staff at ChinaRose without access to Toast API.
+This is a lightweight website deployment of the Excel converter and CSV compiler tool using Vite+React with Tailwind to be used by non-technical staff at ChinaRose without access to Toast API.
 
 The tool streamlines bookkeeping across multiple business locations by enabling users to compile 3 Excel files into 1 through a simple upload-download interface.
 
