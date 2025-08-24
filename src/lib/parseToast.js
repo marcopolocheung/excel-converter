@@ -45,14 +45,14 @@ export function extractMetrics({ generalWb, lunchWb, dinnerWb }) {
 
   // lunch workbook
   const lunchSummary = getSheetDataFrom(lunchWb, 'Sales category summary');
-  const lunchDrink   = findCell(lunchSummary, (r) => r['Sales category'] === 'DRINK', 'Net sales');
-  const lunchFood    = findCell(lunchSummary, (r) => r['Sales category'] === 'FOOD',  'Net sales');
+  const lunchDrink   = findCell(lunchSummary, (r) => (r['Sales category'] || "").toUpperCase() === 'DRINK', 'Net sales');
+  const lunchFood    = findCell(lunchSummary, (r) => (r['Sales category'] || "").toUpperCase() === 'FOOD',  'Net sales');
   const lunchTax     = findCell(lunchSummary, (r) => r['Sales category'] === 'Total', 'Tax amount');
 
   // dinner workbook
   const dinnerSummary = getSheetDataFrom(dinnerWb, 'Sales category summary');
-  const dinnerDrink   = findCell(dinnerSummary, (r) => r['Sales category'] === 'DRINK', 'Net sales');
-  const dinnerFood    = findCell(dinnerSummary, (r) => r['Sales category'] === 'FOOD',  'Net sales');
+  const dinnerDrink   = findCell(dinnerSummary, (r['Sales category'] || "").toUpperCase() === 'DRINK', 'Net sales');
+  const dinnerFood    = findCell(dinnerSummary, (r['Sales category'] || "").toUpperCase() === 'FOOD',  'Net sales');
   const dinnerTax     = findCell(dinnerSummary, (r) => r['Sales category'] === 'Total', 'Tax amount');
 
   return {

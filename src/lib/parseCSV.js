@@ -225,13 +225,19 @@ async function exportSingleSheetXlsx(allRows, meta = {}) {
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   });
+  
   function formatDate(dateStr) {
-    const d = new Date(dateStr);
-    const yy = String(d.getFullYear()).slice(2);
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
+    if (!dateStr) return "UNKNOWN";
+
+    const [m, d, y] = dateStr.split(/[/-]/).map(Number);
+
+    const yy = String(y).slice(2);
+    const mm = String(m).padStart(2, "0");
+    const dd = String(d).padStart(2, "0");
+
     return `${yy}_${mm}${dd}`;
   }
+
 
   function extractChinaRoseNumber(locationStr) {
     const match = locationStr?.match(/#(\d+)/);
