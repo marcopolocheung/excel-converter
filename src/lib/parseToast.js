@@ -51,8 +51,8 @@ export function extractMetrics({ generalWb, lunchWb, dinnerWb }) {
 
   // dinner workbook
   const dinnerSummary = getSheetDataFrom(dinnerWb, 'Sales category summary');
-  const dinnerDrink   = findCell(dinnerSummary, (r['Sales category'] || "").toUpperCase() === 'DRINK', 'Net sales');
-  const dinnerFood    = findCell(dinnerSummary, (r['Sales category'] || "").toUpperCase() === 'FOOD',  'Net sales');
+  const dinnerDrink   = findCell(dinnerSummary, (r) => (r['Sales category'] || "").toUpperCase() === 'DRINK', 'Net sales');
+  const dinnerFood    = findCell(dinnerSummary, (r) => (r['Sales category'] || "").toUpperCase() === 'FOOD',  'Net sales');
   const dinnerTax     = findCell(dinnerSummary, (r) => r['Sales category'] === 'Total', 'Tax amount');
 
   return {
