@@ -24,7 +24,12 @@ export function extractMetrics({ generalWb, lunchWb, dinnerWb }) {
   // gwb
   const revenueSummary  = getSheetDataFrom(generalWb, 'Revenue summary');
   const paymentsSummary = getSheetDataFrom(generalWb, 'Payments summary');
-  const checkDiscounts  = getSheetDataFrom(generalWb, 'Check Discounts');
+
+  const checkDiscounts = (() => {
+    try { return getSheetDataFrom(generalWb, 'Check Discounts'); }
+    catch { return []; }
+  })();
+
   const voidSummary     = getSheetDataFrom(generalWb, 'Void summary');
 
   const revenueTotal = toNumber(revenueSummary[0]?.Total);
@@ -57,7 +62,9 @@ export function extractMetrics({ generalWb, lunchWb, dinnerWb }) {
     C11: card('AMEX'),
     C12: card('MASTERCARD'),
     C13: card('VISA'),
-    C16: findCell(checkDiscounts, (r) => r.Discount === 'Total', 'Amount'),
+
+    C16: findCellSafe(checkDiscounts, (r) => r.Discount === 'Total', 'Amount'),
+
     C17: toNumber(voidSummary[0]?.['Void amount']),
     C19: lunchDrink,
     C18: lunchFood,
