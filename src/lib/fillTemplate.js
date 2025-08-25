@@ -95,7 +95,15 @@ export async function downloadFilledWorkbook(cellMap, formData) {
 
     let datePart = '00-0000';
     if (formData?.date) {
-      const dateObj = new Date(formData.date);
+      let dateObj;
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(formData.date));
+      if (m) {
+        const [, y, mo, d] = m;
+        dateObj = new Date(Number(y), Number(mo) - 1, Number(d));
+      } else {
+        dateObj = new Date(formData.date);
+      }
+
       const yy = String(dateObj.getFullYear()).slice(-2);
       const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
       const dd = String(dateObj.getDate()).padStart(2, '0');
