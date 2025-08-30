@@ -99,35 +99,6 @@ async function exportSingleSheetXlsx(allRows, meta = {}) {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("All Employees");
 
-  //< page setup >
-
-  sheet.pageSetup.margins = {
-    left: 0.45,
-    right: 0.45,
-    top: 1,
-    bottom: 1,
-    header: 0.3,
-    footer: 0.3
-  };
-
-
-  sheet.pageSetup.fitToPage = true;
-  sheet.pageSetup.fitToWidth = 1;
-  sheet.pageSetup.fitToHeight = 10;
-
-  const [locLine1, locLine2] = 
-    (location || "").split(" - ").map(s => s.trim());
-
-  const leftHeader = 
-    locLine2 ? `${locLine1}\n${locLine2}` : location;
-
-  const dateRange = startDate && endDate ? `${startDate} - ${endDate}` : "";
-
-  sheet.headerFooter.oddHeader =
-    `&L&B&"Arial"&16${leftHeader}` +
-    `&C&B&"Arial"&16BI-WEEKLY PAY PERIOD\n${dateRange}` +
-    `&R&B&"Arial"&16&P`;
-
   sheet.columns = [
     { key: "Employee External Id", width: 25 },
     { key: "Employee", width: 35 },
@@ -226,15 +197,19 @@ async function exportSingleSheetXlsx(allRows, meta = {}) {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   });
   
+
   function formatDate(dateStr) {
-    if (!dateStr) return "UNKNOWN";
 
-    const [m, d, y] = dateStr.split(/[/-]/).map(Number);
-
-    const yy = String(y).slice(2);
-    const mm = String(m).padStart(2, "0");
-    const dd = String(d).padStart(2, "0");
-
+    const date = new Date(dateStr);
+    
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    
+    const yy = year.toString().slice(-2); 
+    const mm = month.toString().padStart(2, '0');
+    const dd = day.toString().padStart(2, '0');
+    
     return `${yy}_${mm}${dd}`;
   }
 
