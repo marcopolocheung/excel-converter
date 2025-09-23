@@ -7,8 +7,7 @@ export function parseCsvAndExport(file, onComplete, onError, meta = {}) {
     header: true,
     skipEmptyLines: true,
     complete: (results) => {
-      const dataWithoutFirstRow = results.data.slice(1);
-      const grouped = groupByEmployeeExternalId(dataWithoutFirstRow);
+      const grouped = groupByEmployeeExternalId(results.data);
       const sorted = sortGroupedByDate(grouped);
       const flattened = flattenGroupedData(sorted);
       exportSingleSheetXlsx(flattened, meta); 
