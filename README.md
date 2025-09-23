@@ -8,6 +8,8 @@ The converter is deployed via GitHub Pages to ensure accessibility from any loca
 
 https://marcopolocheung.github.io/excel-converter/
 
+CSV_CONVERTER takes in empid, emp, jtitle, indate, outdate, thour, rhour, ohour
+
 Notes:
 
 Front-end needs work, looks terrible
