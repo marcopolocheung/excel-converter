@@ -4,6 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import { extractMetrics } from '../lib/parseToast';
 import { downloadFilledWorkbook } from '../lib/fillTemplate';
+import { fetchCashoutFields, storeForLocation } from '../lib/cashout';
 
 type FileMap = {
   general: File | null;
@@ -56,6 +57,24 @@ export default function ChinaRoseConverter() {
       multiple: false
     })
   };
+
+  const [cashoutStatus, setCashoutStatus] = useState('');
+
+  async function fillFromCashout() {
+    const store = storeForLocation(form.location);
+    if (!store || !form.date) return setCashoutStatus('Pick the location and date first.');
+    const code = window.prompt('Manager code (same as the scheduler demo):');
+    if (!code) return;
+    setCashoutStatus('Loading…');
+    try {
+      const fields = await fetchCashoutFields(store, form.date, code);
+      if (!fields) return setCashoutStatus(`No cash-out saved for ${store} on ${form.date}.`);
+      setForm(f => ({ ...f, ...fields }));
+      setCashoutStatus(`Filled from the ${store} cash-out for ${form.date}.`);
+    } catch (err) {
+      setCashoutStatus((err as Error).message);
+    }
+  }
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -199,6 +218,17 @@ export default function ChinaRoseConverter() {
           <p className="text-center text-white max-w-md">
           <strong>REMEMBER TO ENABLE EDITING TO SEE FULL CHANGES</strong>
           </p>
+
+          <div className="flex flex-col items-center gap-1">
+            <button
+              type="button"
+              onClick={fillFromCashout}
+              className="px-4 py-2 rounded text-white bg-blue-600 hover:bg-blue-700 transition shadow text-sm"
+            >
+              Fill deposits from cash-out
+            </button>
+            <p role="status" className="text-sm text-white">{cashoutStatus}</p>
+          </div>
 
           <div className="flex flex-row gap-2 w-full">
             <input
